@@ -1,37 +1,83 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Socket.IO Test</title>
-  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+  <meta charset="UTF-8" />
+  <title>Socket.IO Chat with AI</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    body { font-family: Arial; margin: 2rem; }
+    textarea { width: 100%; height: 100px; margin-top: 10px; }
+    button { margin-top: 10px; }
+    .response { margin-top: 20px; padding: 10px; border: 1px solid #ccc; white-space: pre-wrap; }
+  </style>
 </head>
 <body>
-  <div>
-    <input type="text" id="message" placeholder="Type your message...">
-    <button onclick="sendMessage()">Send</button>
-  </div>
-  <div id="responses" style="margin-top: 20px;"></div>
+  <h2>💬 Talk to AI (Socket.IO)</h2>
+
+  <label for="token">JWT Token:</label><br>
+  <input type="text" id="token" placeholder="Paste your JWT token here" style="width: 100%" /><br>
+
+  <label for="message">Your Message:</label>
+  <textarea id="message" placeholder="Type a message..."></textarea>
+  <br>
+  <button onclick="sendMessage()">Send Message</button>
+
+  <div class="response" id="response">Response will appear here...</div>
 
   <script>
-    // Connect to the same server that served this page
-    const socket = io();
-    
-    socket.on('connect', () => {
-      console.log('Connected to server!');
-      document.getElementById('responses').innerHTML += '<p>Connected to server!</p>';
-    });
-    
-    socket.on('bot_response', (message) => {
-      console.log('Bot:', message);
-      document.getElementById('responses').innerHTML += `<p><strong>Bot:</strong> ${message}</p>`;
-    });
-    
-    function sendMessage() {
-      const message = document.getElementById('message').value;
-      if (message) {
-        socket.emit('user_message', message);
-        document.getElementById('responses').innerHTML += `<p><strong>You:</strong> ${message}</p>`;
-        document.getElementById('message').value = '';
+    let socket;
+
+    function connectSocket() {
+      const token = document.getElementById("token").value;
+      if (!token) {
+        alert("Please enter a JWT token");
+        return;
       }
+
+      // Establish socket connection with auth
+      socket = io("http://localhost:5000", {
+        auth: { token },
+        transports: ["websocket"]
+      });
+
+      socket.on("connect", () => {
+        console.log("✅ Connected to server:", socket.id);
+        document.getElementById("response").textContent = "✅ Connected to AI server.";
+      });
+
+      socket.on("connect_error", (err) => {
+        console.error("❌ Connection error:", err.message);
+        document.getElementById("response").textContent = "❌ Connection error: " + err.message;
+      });
+
+      socket.on("bot_response", (data) => {
+        console.log("🤖 AI Response:", data);
+        document.getElementById("response").textContent = "🤖 " + data;
+      });
+    }
+
+    function sendMessage() {
+      const text = document.getElementById("message").value.trim();
+      const token = document.getElementById("token").value;
+
+      if (!socket || !socket.connected) {
+        connectSocket();
+        setTimeout(() => sendMessage(), 1000); // retry after connection
+        return;
+      }
+
+      if (!text) {
+        alert("Please type a message!");
+        return;
+      }
+
+      socket.emit("user_message", {
+        type: "text",
+        text
+      });
+
+      document.getElementById("message").value = "";
+      document.getElementById("response").textContent = "⌛ Waiting for AI...";
     }
   </script>
 </body>
