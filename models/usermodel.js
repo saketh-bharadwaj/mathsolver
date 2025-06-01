@@ -9,7 +9,7 @@ const User = new Schema({
 
 const UserInfo = new Schema({
     userId: ObjectId,
-    name: {type: String, require: true},
+    username: {type: String, require: true},
     phoneNo: {type:String},  
 })
 

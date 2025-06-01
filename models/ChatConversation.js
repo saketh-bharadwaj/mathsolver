@@ -1,21 +1,29 @@
-
 import mongoose from 'mongoose';
 import ChatMessageSchema from './ChatMessage.js';
 
 const ChatConversationSchema = new mongoose.Schema({
-	title: {
-		type: String,
+	userId: {
+		type: mongoose.Schema.Types.ObjectId,
+		ref: 'User',
 		required: true
 	},
-	messages: {
-		type: [ChatMessageSchema],
-		default: []
+	chatId: {
+		type: String,
+		required: true,
+		unique: true // Ensures no two chats have the same chatId
 	},
+	title: {
+		type: String,
+		default: 'Untitled Chat'
+	},
+	messages: [ChatMessageSchema],
 	isPinned: {
 		type: Boolean,
 		default: false
 	}
-}, { timestamps: true });
+}, {
+	timestamps: true
+});
 
-const ChatConversation = mongoose.model('ChatConversation', ChatConversationSchema);
-export default ChatConversation;
+const Chat = mongoose.model('Chat', ChatConversationSchema);
+export default Chat;

@@ -7,7 +7,7 @@ const router = express.Router();
 
 
 router.post('/signup',  async function(req, res){
-    const { name,  email, password } = req.body;
+    const { username,  email, password } = req.body;
     
     let errorThrown = false;
     try {
@@ -21,7 +21,7 @@ router.post('/signup',  async function(req, res){
       
        
         await UserInfoModel.create({
-            name: name,
+            username: username,
             userId: newUser._id,
         });
 

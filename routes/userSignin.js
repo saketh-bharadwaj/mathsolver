@@ -26,7 +26,8 @@ router.post('/signin',async function(req, res){
         },process.env.JWT_SECRET);
         res.json({
             success: true,
-            token: token
+            token: token,
+            userId: response._id
         })
     }
     else {
