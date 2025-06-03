@@ -4,7 +4,7 @@ import mongoose from 'mongoose';
 const ChatMessageSchema = new mongoose.Schema({
 	type: {
 		type: String,
-		enum: ['text', 'image'],
+		enum: ['text', 'image','image-text','image-base64'],
 		required: true
 	},
 	content: {

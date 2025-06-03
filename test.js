@@ -7,7 +7,7 @@ import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
-
+import { uploadToCloudinary } from "./middlewares/uploadToCloudinary.js";
 import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 
@@ -28,11 +28,12 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"], credentials: true }));
 // Routes
 import userSignup from "./routes/userSignup.js";
 import userSignin from "./routes/userSignin.js";
-import chatsync from "./routes/chatFetch.js"
+import chatRoutes from "./routes/chatFetch.js"
+
 
 app.use("/user", userSignup);
 app.use("/user", userSignin);
-app.use("/user", chatsync)
+app.use("/user", chatRoutes)
 
 // HTTP & WebSocket setup
 const server = createServer(app);
@@ -119,14 +120,20 @@ io.on("connection", (socket) => {
         const tempFilePath = path.join(tempDir, `${uuidv4()}.png`);
         fs.writeFileSync(tempFilePath, base64Data, "base64");
 
+        const cloudinaryUrl = await uploadToCloudinary(tempFilePath);
+
         const extractedText = await extractTextFromImage(tempFilePath);
 
         messages.push({ role: "user", content: extractedText || "[Image received]" });
 
-        conversation.messages.push({ type: "image", content: data.base64, fromUser: true });
+        conversation.messages.push({ type: "image-base64", content: data.base64, fromUser: true });
+
+        if (cloudinaryUrl) {
+          conversation.messages.push({ type: "image", content: cloudinaryUrl, fromUser: true });
+        }
 
         if (extractedText) {
-          conversation.messages.push({ type: "text", content: extractedText, fromUser: true });
+          conversation.messages.push({ type: "image-text", content: extractedText, fromUser: true });
         }
       }
       // Handle text message
