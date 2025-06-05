@@ -10,7 +10,7 @@ const User = new Schema({
 const UserInfo = new Schema({
     userId: ObjectId,
     username: {type: String, require: true},
-    phoneNo: {type:String},  
+    profileImg: {type:String},  
 })
 
 const UserModel= mongoose.model('users',User);

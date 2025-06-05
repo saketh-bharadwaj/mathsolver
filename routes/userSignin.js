@@ -1,17 +1,24 @@
 import express from "express";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
-import { UserModel } from "../models/usermodel.js";
+import { UserModel,UserInfoModel } from "../models/usermodel.js";
 
 const router = express.Router();
 
 router.post('/signin',async function(req, res){
     const email=req.body.email;
     const password=req.body.password;
-
+    let userInfoResponse = {};
     const response = await UserModel.findOne({
         email: email
     })
+    if (response) {
+    userInfoResponse = await UserInfoModel.findOne({
+        userId: response._id
+    });
+
+    console.log(userInfoResponse);
+}
     if(!response){
         res.status(403).json({
             success: false,
@@ -27,7 +34,9 @@ router.post('/signin',async function(req, res){
         res.json({
             success: true,
             token: token,
-            userId: response._id
+            userId: response._id,
+            username: userInfoResponse.username,
+            profileImg: userInfoResponse.profileImg
         })
     }
     else {

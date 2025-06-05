@@ -7,7 +7,7 @@ import fs from "fs";
 import path from "path";
 import { v4 as uuidv4 } from "uuid";
 import jwt from "jsonwebtoken";
-import { uploadToCloudinary } from "./middlewares/uploadToCloudinary.js";
+import { uploadChatImageToCloudinary } from "./middlewares/uploadToCloudinary.js";
 import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
 import { AzureKeyCredential } from "@azure/core-auth";
 
@@ -28,12 +28,15 @@ app.use(cors({ origin: "*", methods: ["GET", "POST"], credentials: true }));
 // Routes
 import userSignup from "./routes/userSignup.js";
 import userSignin from "./routes/userSignin.js";
-import chatRoutes from "./routes/chatFetch.js"
+import chatRoutes from "./routes/chatFetch.js";
+import editProfile from "./routes/editProfile.js";
 
 
 app.use("/user", userSignup);
 app.use("/user", userSignin);
-app.use("/user", chatRoutes)
+app.use("/user", chatRoutes);
+app.use("/user", editProfile);
+
 
 // HTTP & WebSocket setup
 const server = createServer(app);
@@ -120,7 +123,7 @@ io.on("connection", (socket) => {
         const tempFilePath = path.join(tempDir, `${uuidv4()}.png`);
         fs.writeFileSync(tempFilePath, base64Data, "base64");
 
-        const cloudinaryUrl = await uploadToCloudinary(tempFilePath);
+        const cloudinaryUrl = await uploadChatImageToCloudinary(tempFilePath);
 
         const extractedText = await extractTextFromImage(tempFilePath);
 
