@@ -67,8 +67,8 @@ io.use((socket, next) => {
 
 // Azure setup
 const azureToken = process.env.GITHUB_TOKEN;
-const endpoint = "https://models.inference.ai.azure.com";
-const modelName = "Meta-Llama-3.1-8B-Instruct";
+const endpoint = "https://models.github.ai/inference";
+const modelName = "meta/Llama-3.3-70B-Instruct";
 if (!azureToken) {
 	console.error("Missing GITHUB_TOKEN in .env");
 	process.exit(1);
